@@ -1,1 +1,3 @@
-# swt-project
+## TimetrackingApp
+
+UAS Esslingen SWT Coursework
