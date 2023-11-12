@@ -1,4 +1,3 @@
-package labor;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.PlainDocument;
@@ -21,27 +20,50 @@ import javax.swing.event.DocumentListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.time.Duration;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import java.util.List;
+import java.util.ArrayList;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+import javax.swing.table.DefaultTableModel;
+
 
 
 
 public class EmployeeWorktimeRegistrationForm extends JFrame {
     private JTable table;
+    private LocalDate today;
+    private DateTimeFormatter monthFormatter = DateTimeFormatter.ofPattern("MMMM yyyy");
+    List<String> zeitenList = new ArrayList<>();
+     
+
+
+
 
     public EmployeeWorktimeRegistrationForm() {
-        // Create a panel to hold the table
+        
         JPanel panel = new JPanel(new BorderLayout());
+        
 
-        // Determine the current month and year
-        LocalDate today = LocalDate.now();
+        
+        today = LocalDate.now();
         DateTimeFormatter monthFormatter = DateTimeFormatter.ofPattern("MMMM yyyy");
         String monthYear = today.format(monthFormatter);
 
-        // Create a table with 10 columns
+        
         String[] columnNames = {"Day", "Day Name", "Begin", "End", "Break", "Hours Target", "Hours As-Is", "Plus/Minus", "Absence", "Comment"};
         DefaultTableModel model = new DefaultTableModel(columnNames, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return column >= 2; // Allow editing columns 2 and onwards
+                return column >= 2; 
             }
         };
 
@@ -50,10 +72,13 @@ public class EmployeeWorktimeRegistrationForm extends JFrame {
             String dayName = date.getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault());
             model.addRow(new Object[]{day, dayName, "", "", "", "", "", "", "", ""});
         }
+        
 
         table = new JTable(model);
+        
+       
 
-        // Create a custom cell editor for the "Break," "Hours Target," and "Hours As-Is" columns
+        
         TableCellEditor editor = new DefaultCellEditor(new JTextField());
         table.getColumnModel().getColumn(4).setCellEditor(editor);
         table.getColumnModel().getColumn(5).setCellEditor(editor);
@@ -62,13 +87,15 @@ public class EmployeeWorktimeRegistrationForm extends JFrame {
         table.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
+                
                 int column = table.columnAtPoint(e.getPoint());
+                
                 if (column == 4) {
                     int row = table.getSelectedRow();
-                    model.setValueAt("00:45", row, 4); // Set "00:45" in the "Break" column
+                    model.setValueAt("00:45", row, 4); 
                 } else if (column == 5) {
                     int row = table.getSelectedRow();
-                    model.setValueAt("08:00", row, 5); // Set "08:00" in the "Hours Target" column
+                    model.setValueAt("08:00", row, 5); 
                 } else if (column == 6) {
                     int row = table.getSelectedRow();
                     String beginValue = (String) model.getValueAt(row, 2);
@@ -78,24 +105,13 @@ public class EmployeeWorktimeRegistrationForm extends JFrame {
                     if (!beginValue.isEmpty() && !endValue.isEmpty()) {
                         LocalTime beginTime = LocalTime.parse(beginValue);
                         LocalTime endTime = LocalTime.parse(endValue);
-                        Duration workDuration = Duration.between(beginTime, endTime);
-                        long workMinutes = workDuration.toMinutes();
-
-                        if (!breakValue.isEmpty()) {
-                            LocalTime breakTime = LocalTime.parse(breakValue);
-                            workMinutes -= breakTime.getHour() * 60 + breakTime.getMinute();
-                        }
-
-                        long hours = workMinutes / 60;
-                        long remainingMinutes = workMinutes % 60;
-                        String hoursAsIs = String.format("%02d:%02d", hours, remainingMinutes);
+                        Duration workDuration = calculateWorkDuration(beginTime, endTime, breakValue);
+                        String hoursAsIs = formatDuration(workDuration);
                         model.setValueAt(hoursAsIs, row, 6);
                     }
-
                 } else if (column == 7) {
-                    // Calculate "Plus/Minus" when "Plus/Minus" column is clicked
-                    int row=table.getSelectedRow();
-                    // Calculate "Plus/Minus" when "Plus/Minus" column is clicked
+                    
+                    int row = table.getSelectedRow();
                     String hoursAsIsValue = (String) model.getValueAt(row, 6);
                     String hoursTargetValue = (String) model.getValueAt(row, 5);
 
@@ -106,7 +122,7 @@ public class EmployeeWorktimeRegistrationForm extends JFrame {
                         Duration plusMinusDuration = Duration.between(hoursTargetTime, hoursAsIsTime);
 
                         if (plusMinusDuration.isNegative()) {
-                            // If the duration is negative, set minus sign "-"
+                            
                             String plusMinusValue = "-" + formatDuration(plusMinusDuration.negated());
                             model.setValueAt(plusMinusValue, row, 7);
                         } else {
@@ -114,71 +130,354 @@ public class EmployeeWorktimeRegistrationForm extends JFrame {
                             model.setValueAt(plusMinusValue, row, 7);
                         }
                     } else {
-                        model.setValueAt("", row, 7); // Clear "Plus/Minus" if data is missing
+                        model.setValueAt("", row, 7); 
                     }
-                }else if (column == 8) {
-                    int row=table.getSelectedRow();
-                    model.setValueAt("No", row, 8);
-                }
-            }
-        });
-
-        // Add a DocumentListener to calculate "Hours As-Is" dynamically
-        int hoursAsIsColumnIndex = 6;
-        JTextField hoursAsIsField = (JTextField) editor.getTableCellEditorComponent(table, "", false, 0, hoursAsIsColumnIndex);
-
-        hoursAsIsField.getDocument().addDocumentListener(new DocumentListener() {
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                calculateHoursAsIs();
-            }
-
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                calculateHoursAsIs();
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                calculateHoursAsIs();
-            }
-
-            private void calculateHoursAsIs() {
-                SwingUtilities.invokeLater(() -> {
+                } else if (column == 8) {
                     int row = table.getSelectedRow();
-                    String beginTime = (String) model.getValueAt(row, 2);
-                    String endTime = (String) model.getValueAt(row, 3);
-                    String breakTime = (String) model.getValueAt(row, 4);
+                    model.setValueAt("No", row, 8);
+                    
+                }
+     
+          }
+        });
 
-                    // Calculate "Hours As-Is"
-                    Duration workDuration = calculateWorkDuration(beginTime, endTime, breakTime);
-                    String hoursAsIs = formatDuration(workDuration);
-                    model.setValueAt(hoursAsIs, row, hoursAsIsColumnIndex);
-                });
+        
+        JButton prevMonthButton = new JButton("Prev Month");
+        JButton nextMonthButton = new JButton("Next Month");
+        JButton saveButton = new JButton("Save");
+        JButton loadButton = new JButton("Load Data");
+        JButton calculateSumButton = new JButton("Berechnen");
+        
+        calculateSumButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                openSumWindow();
+            }
+        });
+        
+        loadButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+            	displayDataFromFile();
+                JOptionPane.showMessageDialog(null, "Data loaded from worktime_data.csv");
+            }
+        });
+        
+        saveButton.addActionListener(new ActionListener() {
+        	@Override
+        	public void actionPerformed(ActionEvent e) {
+        		saveDataToFile(); 
+                JOptionPane.showMessageDialog(null, "Data saved to worktime_data.csv");
+                
+            
+        	        
+        	}
+        });
+
+     
+        prevMonthButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                
+                today = today.minusMonths(1);
+                updateTable();
+                
             }
         });
 
-        // Add the table to the panel
+        nextMonthButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                
+                today = today.plusMonths(1);
+                updateTable();
+            }
+        });
+
+        
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.add(prevMonthButton);
+        buttonPanel.add(nextMonthButton);
+        buttonPanel.add(saveButton);
+        buttonPanel.add(loadButton);
+        buttonPanel.add(calculateSumButton);
+
+        
+        panel.add(buttonPanel, BorderLayout.NORTH);
         panel.add(new JScrollPane(table), BorderLayout.CENTER);
 
-        // Set up the frame
+        
         setTitle(monthYear + " Worktime Registration");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setSize(1000, 400);
         add(panel);
+
+        
+        updateTable();
+    }
+    
+    private String formatLocalTime(LocalTime localTime) {
+        return localTime.format(DateTimeFormatter.ofPattern("HH:mm"));
     }
 
-    private Duration calculateWorkDuration(String beginTime, String endTime, String breakTime) {
-        LocalTime begin = LocalTime.parse(beginTime);
-        LocalTime end = LocalTime.parse(endTime);
-        LocalTime breakDuration = LocalTime.parse(breakTime);
-        return Duration.between(begin, end).minusHours(breakDuration.getHour()).minusMinutes(breakDuration.getMinute());
+    private void openSumWindow() {
+    
+
+    	DefaultTableModel model = (DefaultTableModel) table.getModel();
+        
+        JFrame sumFrame = new JFrame("Summen");
+        sumFrame.setSize(300, 200);
+
+        
+        JLabel hoursTargetLabel = new JLabel("Summe Hours Target: ");
+        JLabel hoursAsIsLabel = new JLabel("Summe Hours As Is: ");
+        JLabel plusMinusLabel = new JLabel("Summe Plus/Minus: ");
+
+        
+        int totalHoursTarget = calculateTotalHoursTarget();
+        int totalHoursAsIs = calculateTotalHoursAsIs();
+        String totalPlusMinus = calculateTotalPlusMinus();
+
+       
+        JLabel hoursTargetSumLabel = new JLabel(String.format("%02d:%02d", totalHoursTarget / 60, totalHoursTarget % 60));
+        JLabel hoursAsIsSumLabel = new JLabel(String.format("%02d:%02d", totalHoursAsIs / 60, totalHoursAsIs % 60));
+        //JLabel plusMinusSumLabel = new JLabel(String.format("%02d:%02d", totalPlusMinus / 60, totalPlusMinus % 60));
+        JLabel plusMinusSumLabel = new JLabel(totalPlusMinus);
+
+        
+        JPanel sumPanel = new JPanel(new GridLayout(3, 2));
+        sumPanel.add(hoursTargetLabel);
+        sumPanel.add(hoursTargetSumLabel);
+        sumPanel.add(hoursAsIsLabel);
+        sumPanel.add(hoursAsIsSumLabel);
+        sumPanel.add(plusMinusLabel);
+        sumPanel.add(plusMinusSumLabel);
+
+        
+        sumFrame.add(sumPanel);
+
+        
+        sumFrame.setVisible(true);
+    }
+
+    
+    private int calculateTotalHoursTarget() {
+    	DefaultTableModel model = (DefaultTableModel) table.getModel();
+
+        int totalHoursTarget = 0;
+
+        for (int row = 0; row < model.getRowCount(); row++) {
+            String hoursTargetValue = (String) model.getValueAt(row, 5);
+            if (!hoursTargetValue.isEmpty()) {
+                String[] parts = hoursTargetValue.split(":");
+                int hours = Integer.parseInt(parts[0]);
+                int minutes = Integer.parseInt(parts[1]);
+                totalHoursTarget += hours * 60 + minutes;
+            }
+        }
+        return totalHoursTarget; 
+    }
+
+    private int calculateTotalHoursAsIs() {
+    	DefaultTableModel model = (DefaultTableModel) table.getModel();
+    	int totalHoursAsIs = 0;
+
+        for (int row = 0; row < model.getRowCount(); row++) {
+            String hoursAsIsValue = (String) model.getValueAt(row, 6);
+            if (!hoursAsIsValue.isEmpty()) {
+                String[] parts = hoursAsIsValue.split(":");
+                int hours = Integer.parseInt(parts[0]);
+                int minutes = Integer.parseInt(parts[1]);
+                totalHoursAsIs += hours * 60 + minutes;
+            }
+        }
+        return totalHoursAsIs; 
+    }
+    private String formatTime(int hours, int minutes) {
+        String sign = (hours < 0) ? "-" : "";
+        hours = Math.abs(hours);
+
+        return String.format("%s%02d:%02d", sign, hours, minutes);
+    }
+    private String calculateTotalPlusMinus() {
+        DefaultTableModel model = (DefaultTableModel) table.getModel();
+
+        int totalPlusMinusHours = 0;
+        int totalPlusMinusMinutes = 0;
+
+        for (int row = 0; row < model.getRowCount(); row++) {
+            String plusMinusValue = (String) model.getValueAt(row, 7);
+            if (!plusMinusValue.isEmpty()) {
+                String[] parts = plusMinusValue.split(":");
+                int hours = Integer.parseInt(parts[0]);
+                int minutes = Integer.parseInt(parts[1]);
+
+                // Check if the value is negative
+                boolean isNegative = plusMinusValue.startsWith("-");
+                if (isNegative) {
+                    totalPlusMinusHours -= hours;
+                    totalPlusMinusMinutes -= minutes;
+                } else {
+                    totalPlusMinusHours += hours;
+                    totalPlusMinusMinutes += minutes;
+                }
+            }
+        }
+
+        // Adjust totalPlusMinus if minutes exceed 60
+        totalPlusMinusHours += totalPlusMinusMinutes / 60;
+        totalPlusMinusMinutes = Math.abs(totalPlusMinusMinutes) % 60;
+
+        return formatTime(totalPlusMinusHours, totalPlusMinusMinutes);
+    }
+
+
+
+
+
+
+
+    public void loadDataFromFile() {
+        try {
+            DefaultTableModel model = (DefaultTableModel) table.getModel();
+            model.setRowCount(0); // L schen Sie alle vorhandenen Daten in der Tabelle
+
+            BufferedReader reader = new BufferedReader(new FileReader("worktime_data.csv"));
+            String line;
+
+            
+            if ((line = reader.readLine()) != null) {
+                String[] headers = line.split(",");
+                model.setColumnIdentifiers(headers);
+            }
+
+           
+            while ((line = reader.readLine()) != null) {
+                String[] data = line.split(",");
+                model.addRow(data);
+            }
+
+            reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    public void displayDataFromFile() {
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader("worktime_data.csv"));
+            DefaultTableModel model = new DefaultTableModel();
+
+            
+            String headerLine = reader.readLine();
+            if (headerLine != null) {
+                String[] headers = headerLine.split(",");
+                model.setColumnIdentifiers(headers);
+            }
+
+            
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] rowData = line.split(",");
+                
+                
+                if (rowData.length > 1) {
+                    model.addRow(rowData);
+                }
+            }
+
+            reader.close();
+
+            
+            JTable table = new JTable(model);
+
+            
+            JFrame frame = new JFrame("Loaded Data");
+            frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            frame.add(new JScrollPane(table));
+            frame.pack();
+            frame.setVisible(true);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+
+
+
+
+    private void saveDataToFile() {
+        try {
+            DefaultTableModel model = (DefaultTableModel) table.getModel();
+            int rowCount = model.getRowCount();
+
+            FileWriter writer = new FileWriter("worktime_data.csv");
+
+            // Schreiben Sie die Spalten berschriften in die CSV-Datei
+            for (int i = 0; i < model.getColumnCount(); i++) {
+                writer.append(model.getColumnName(i));
+                if (i < model.getColumnCount() - 1) {
+                    writer.append(",");
+                } else {
+                    writer.append("\n");
+                }
+            }
+
+            // Schreiben Sie die Zeilendaten in die CSV-Datei
+            for (int row = 0; row < rowCount; row++) {
+                for (int column = 0; column < model.getColumnCount(); column++) {
+                    writer.append(model.getValueAt(row, column).toString());
+                    if (column < model.getColumnCount() - 1) {
+                        writer.append(",");
+                    } else {
+                        writer.append("\n");
+                    }
+                }
+            }
+
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    private Duration calculateWorkDuration(LocalTime beginTime, LocalTime endTime, String breakValue) {
+        Duration workDuration = Duration.between(beginTime, endTime);
+
+        if (!breakValue.isEmpty()) {
+            LocalTime breakTime = LocalTime.parse(breakValue);
+            workDuration = workDuration.minus(Duration.ofHours(breakTime.getHour()).plusMinutes(breakTime.getMinute()));
+        }
+
+        return workDuration;
     }
 
     private String formatDuration(Duration duration) {
         long hours = duration.toHours();
         long minutes = duration.minusHours(hours).toMinutes();
         return String.format("%02d:%02d", hours, minutes);
+    }
+    
+    private String formatDuration(int hours) {
+        return String.format("%02d:00", hours);
+    }
+ 
+
+
+    private void updateTable() {
+        DefaultTableModel model = (DefaultTableModel) table.getModel();
+        model.setRowCount(0);
+
+        for (int day = 1; day <= today.lengthOfMonth(); day++) {
+            LocalDate date = LocalDate.of(today.getYear(), today.getMonthValue(), day);
+            String dayName = date.getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault());
+            model.addRow(new Object[]{day, dayName, "", "", "", "", "", "", "", ""});
+        }
+        //model.addRow(new Object[]{"", "", "", "", "", "", "", "", ""});
+
+        setTitle(today.format(monthFormatter) + " Worktime Registration"); // Aktualisiere den Fenstertitel
+        
+      
     }
 
     public static void main(String[] args) {
@@ -188,3 +487,4 @@ public class EmployeeWorktimeRegistrationForm extends JFrame {
         });
     }
 }
+
