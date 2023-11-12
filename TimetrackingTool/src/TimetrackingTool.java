@@ -211,6 +211,8 @@ public class TimetrackingTool {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     registerWorktime(username);
+                    EmployeeWorktimeRegistrationForm worktimeForm = new EmployeeWorktimeRegistrationForm();
+                    worktimeForm.setVisible(true);
                 }
             });
 
@@ -218,6 +220,8 @@ public class TimetrackingTool {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     viewWorktime(username);
+                    EmployeeWorktimeRegistrationForm form = new EmployeeWorktimeRegistrationForm();
+                    form.displayDataFromFile();
                 }
             });
 
