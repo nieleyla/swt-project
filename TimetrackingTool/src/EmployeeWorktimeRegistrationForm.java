@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.io.FileWriter;
 import java.io.BufferedReader;
-import java.io.FileReader;
+import java.io.FileReader; 
 
 public class EmployeeWorktimeRegistrationForm extends JFrame {
     private JTable table;
@@ -115,8 +115,8 @@ public class EmployeeWorktimeRegistrationForm extends JFrame {
         JButton prevMonthButton = new JButton("Prev Month");
         JButton nextMonthButton = new JButton("Next Month");
         JButton saveButton = new JButton("Save");
-        JButton loadButton = new JButton("Load Data");
-        JButton calculateSumButton = new JButton("Berechnen");
+        JButton loadButton = new JButton("Load");
+        JButton calculateSumButton = new JButton("Calculate");
 
         calculateSumButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -224,6 +224,9 @@ public class EmployeeWorktimeRegistrationForm extends JFrame {
 
         for (int row = 0; row < model.getRowCount(); row++) {
             String hoursTargetValue = (String) model.getValueAt(row, 5);
+            if (hoursTargetValue == null) {
+                return totalHoursTarget;
+            }
             if (!hoursTargetValue.isEmpty()) {
                 String[] parts = hoursTargetValue.split(":");
                 int hours = Integer.parseInt(parts[0]);
@@ -240,6 +243,10 @@ public class EmployeeWorktimeRegistrationForm extends JFrame {
 
         for (int row = 0; row < model.getRowCount(); row++) {
             String hoursAsIsValue = (String) model.getValueAt(row, 6);
+
+            if (hoursAsIsValue == null) {
+                return totalHoursAsIs;
+            }
             if (!hoursAsIsValue.isEmpty()) {
                 String[] parts = hoursAsIsValue.split(":");
                 int hours = Integer.parseInt(parts[0]);
@@ -265,6 +272,11 @@ public class EmployeeWorktimeRegistrationForm extends JFrame {
 
         for (int row = 0; row < model.getRowCount(); row++) {
             String plusMinusValue = (String) model.getValueAt(row, 7);
+
+            if (plusMinusValue == null) {
+                return formatTime(totalPlusMinusHours, totalPlusMinusMinutes);
+            }
+            
             if (!plusMinusValue.isEmpty()) {
                 String[] parts = plusMinusValue.split(":");
                 int hours = Integer.parseInt(parts[0]);
@@ -292,7 +304,7 @@ public class EmployeeWorktimeRegistrationForm extends JFrame {
     public void loadDataFromFile() {
         try {
             DefaultTableModel model = (DefaultTableModel) table.getModel();
-            model.setRowCount(0); // L schen Sie alle vorhandenen Daten in der Tabelle
+            model.setRowCount(0);
 
             BufferedReader reader = new BufferedReader(new FileReader("worktime_data.csv"));
             String line;
@@ -391,10 +403,14 @@ public class EmployeeWorktimeRegistrationForm extends JFrame {
                 }
             }
 
-            // Schreiben Sie die Zeilendaten in die CSV-Datei
             for (int row = 0; row < rowCount; row++) {
                 for (int column = 0; column < model.getColumnCount(); column++) {
-                    writer.append(model.getValueAt(row, column).toString());
+                    Object currentValue = model.getValueAt(row, column);
+                    if (currentValue == null) {
+                        writer.append("");
+                    } else {
+                        writer.append(currentValue.toString());
+                    }
                     if (column < model.getColumnCount() - 1) {
                         writer.append(",");
                     } else {
@@ -439,9 +455,8 @@ public class EmployeeWorktimeRegistrationForm extends JFrame {
             String dayName = date.getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.getDefault());
             model.addRow(new Object[] { day, dayName, "", "", "", "", "", "", "", "" });
         }
-        // model.addRow(new Object[]{"", "", "", "", "", "", "", "", ""});
 
-        setTitle(today.format(monthFormatter) + " Worktime Registration"); // Aktualisiere den Fenstertitel
+        setTitle(today.format(monthFormatter) + " Worktime Registration");
 
     }
 
