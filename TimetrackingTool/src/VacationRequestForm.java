@@ -12,8 +12,8 @@ public class VacationRequestForm extends JFrame {
     public VacationRequestForm(String employeeUsername) {
         JPanel panel = new JPanel(new GridLayout(4, 2));
 
-        JLabel startDateLabel = new JLabel("Start Date:");
-        JLabel endDateLabel = new JLabel("End Date:");
+        JLabel startDateLabel = new JLabel("Start Date (yyyy-mm-dd):");
+        JLabel endDateLabel = new JLabel("End Date (yyyy-mm-dd):");
         JLabel additionalInfoLabel = new JLabel("Additional Information:");
 
         startDateField = new JTextField();
@@ -44,8 +44,20 @@ public class VacationRequestForm extends JFrame {
     }
 
     private void sendVacationRequest(String employeeUsername) {
-        LocalDate startDate = LocalDate.parse(startDateField.getText());
-        LocalDate endDate = LocalDate.parse(endDateField.getText());
+        try {
+            LocalDate.parse(startDateField.getText());
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Invalid start date. Please enter a date in the format yyyy-mm-dd");
+            return;
+        }
+
+        try {
+            LocalDate.parse(endDateField.getText());
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Invalid end date. Please enter a date in the format yyyy-mm-dd");
+            return;
+        }
+
         String additionalInfo = additionalInfoArea.getText();
 
         // You can implement logic here to store the vacation request data,
