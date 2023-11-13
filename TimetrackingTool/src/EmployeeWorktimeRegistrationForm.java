@@ -128,7 +128,8 @@ public class EmployeeWorktimeRegistrationForm extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 displayDataFromFile();
-                JOptionPane.showMessageDialog(null, "Data loaded from worktime_data.csv");
+                //JOptionPane.showMessageDialog(null, "Data loaded from worktime_data.csv");
+                openSumWindow();
             }
         });
 
