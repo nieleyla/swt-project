@@ -343,7 +343,7 @@ public class TimetrackingTool {
 
     private static void styleButton(JButton button) {
         button.setPreferredSize(new Dimension(200, 40));
-        button.setBackground(new Color(129, 217, 94));
+        button.setBackground(new Color(81, 114, 92));
         button.setForeground(Color.WHITE);
     }
 }
