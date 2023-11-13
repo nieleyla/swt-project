@@ -1,8 +1,20 @@
-import javax.swing.*;
-import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.time.LocalDate;
+import java.awt.GridLayout;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+
 
 public class VacationRequestForm extends JFrame {
     private JTextField startDateField;
@@ -45,29 +57,34 @@ public class VacationRequestForm extends JFrame {
 
     private void sendVacationRequest(String employeeUsername) {
         try {
-            LocalDate.parse(startDateField.getText());
+            LocalDate endDate = LocalDate.parse(endDateField.getText());
+            LocalDate startDate = LocalDate.parse(startDateField.getText());
+            String additionalInfo = additionalInfoArea.getText();
+
+            saveRequestToFile(employeeUsername, startDate, endDate, additionalInfo);
+            JOptionPane.showMessageDialog(this, "Vacation request sent for " + employeeUsername);
+    
+            dispose();
+
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Invalid start date. Please enter a date in the format yyyy-mm-dd");
+            JOptionPane.showMessageDialog(this, "Invalid date. Please enter a date in the format yyyy-mm-dd");
+            startDateField.setText("");
+            endDateField.setText("");
             return;
         }
+    }
+    private void saveRequestToFile(String username, LocalDate startDate, LocalDate endDate, String additionalInfo) {
+        String filename = "vacation_requests.txt"; // Name der Datei, in der die Anfragen gespeichert werden
 
-        try {
-            LocalDate.parse(endDateField.getText());
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Invalid end date. Please enter a date in the format yyyy-mm-dd");
-            return;
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filename, true))) {
+            writer.write("Username: " + username + "\n");
+            writer.write("Start Date: " + startDate + "\n");
+            writer.write("End Date: " + endDate + "\n");
+            writer.write("Additional Information: " + additionalInfo + "\n");
+            writer.write("------------------------------------\n");
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-
-        String additionalInfo = additionalInfoArea.getText();
-
-        // You can implement logic here to store the vacation request data,
-        // e.g., in a map or a database, for HR to later view and approve/reject.
-
-        // For now, just display a message to indicate that the request is sent.
-        JOptionPane.showMessageDialog(this, "Vacation request sent for " + employeeUsername);
-
-        // Optionally, you can close the form after sending the request.
-        dispose();
     }
 
     public static void main(String[] args) {
