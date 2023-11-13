@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.io.FileWriter;
 import java.io.BufferedReader;
-import java.io.FileReader; 
+import java.io.FileReader;
 
 public class EmployeeWorktimeRegistrationForm extends JFrame {
     private JTable table;
@@ -276,7 +276,7 @@ public class EmployeeWorktimeRegistrationForm extends JFrame {
             if (plusMinusValue == null) {
                 return formatTime(totalPlusMinusHours, totalPlusMinusMinutes);
             }
-            
+
             if (!plusMinusValue.isEmpty()) {
                 String[] parts = plusMinusValue.split(":");
                 int hours = Integer.parseInt(parts[0]);
@@ -326,6 +326,13 @@ public class EmployeeWorktimeRegistrationForm extends JFrame {
     }
 
     public void displayDataFromFile() {
+        try {
+            FileWriter writer = new FileWriter("worktime_data.csv", true);
+            writer.close();
+        } catch (IOException e) {
+            System.out.println("Error creating user file");
+        }
+
         try {
             BufferedReader reader = new BufferedReader(new FileReader("worktime_data.csv"));
             DefaultTableModel model = new DefaultTableModel();

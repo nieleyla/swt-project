@@ -1,6 +1,3 @@
-import javax.swing.border.Border;
-import java.awt.*;
-
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.nio.charset.StandardCharsets;
@@ -23,12 +20,20 @@ class UserData {
         return username;
     }
 
+    public String getPasswordHash() {
+        return passwordHash;
+    }
+
     public void setUsername(String username) {
         this.username = username;
     }
 
     public void setPassword(String password) {
         this.passwordHash = hashPassword(password);
+    }
+
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
     }
 
     public boolean checkPassword(String password) {
@@ -75,30 +80,7 @@ class UserData {
         return null;
     }
 
-}
-
-class RoundedBorder implements Border {
-    private int radius;
-    private Color color;
-
-    public RoundedBorder(int radius, Color color) {
-        this.radius = radius;
-        this.color = color;
+    public void setRole(String string) {
     }
 
-    @Override
-    public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
-        g.setColor(color);
-        g.drawRoundRect(x, y, width - 1, height - 1, radius, radius);
-    }
-
-    @Override
-    public Insets getBorderInsets(Component c) {
-        return new Insets(this.radius, this.radius, this.radius, this.radius);
-    }
-
-    @Override
-    public boolean isBorderOpaque() {
-        return true;
-    }
 }

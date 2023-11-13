@@ -5,19 +5,19 @@ import java.awt.event.ActionListener;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.swing.border.Border;
 
 public class TimetrackingTool {
-    private static Map<String, UserData> users = new HashMap<>();
     private static Map<String, List<String>> vacationRequests = new HashMap<>();
     private static Map<String, List<String>> worktimeSheets = new HashMap<>();
     private static Map<String, String> sicknessRecords = new HashMap<>();
     private static Map<String, String> worktimeApprovals = new HashMap<>();
 
     public static void main(String[] args) {
+        UserDataHandler userDataHandler = new UserDataHandler();
+
         JFrame frame = new JFrame("User Registration & Login");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(600, 400);
+        frame.setSize(720, 480);
 
         JPanel registrationPanel = new JPanel();
         JPanel loginPanel = new JPanel();
@@ -39,9 +39,9 @@ public class TimetrackingTool {
         JPasswordField loginPasswordField = new JPasswordField(20);
         JButton loginButton = new JButton("Login");
 
-        loginPanel.add(new JLabel("Username:"));
+        loginPanel.add(new JLabel("Username: "));
         loginPanel.add(loginUsernameField);
-        loginPanel.add(new JLabel("Password:"));
+        loginPanel.add(new JLabel("Password: "));
         loginPanel.add(loginPasswordField);
         loginPanel.add(loginButton);
 
@@ -51,20 +51,16 @@ public class TimetrackingTool {
 
         frame.add(tabbedPane);
 
-        // Definiere Farben hier:
+        // Color definitions
         Color buttonColor = new Color(81, 114, 92);
         Color panelColor = new Color(220, 235, 216);
 
         registrationPanel.setBackground(panelColor);
         loginPanel.setBackground(panelColor);
 
-        // Make the buttons larger and rounded
         int buttonWidth = 200;
         int buttonHeight = 40;
         Dimension buttonDimension = new Dimension(buttonWidth, buttonHeight);
-
-        // Create a rounded border for buttons
-        Border roundedBorder = new RoundedBorder(30, buttonColor);
 
         registerButton.setBackground(buttonColor);
         loginButton.setBackground(buttonColor);
@@ -74,9 +70,6 @@ public class TimetrackingTool {
 
         registerButton.setPreferredSize(buttonDimension);
         loginButton.setPreferredSize(buttonDimension);
-
-        registerButton.setBorder(roundedBorder);
-        loginButton.setBorder(roundedBorder);
 
         frame.setVisible(true);
 
@@ -89,7 +82,7 @@ public class TimetrackingTool {
                 String regUsername = regUsernameField.getText();
                 String regPassword = new String(regPasswordField.getPassword());
 
-                if (users.containsKey(regUsername)) {
+                if (userDataHandler.checkUsernameExists(regUsername)) {
                     JOptionPane.showMessageDialog(null, "Username already exists. Please choose another one.");
                     regUsernameField.setText("");
                     regPasswordField.setText("");
@@ -103,14 +96,16 @@ public class TimetrackingTool {
                     regPasswordField.setText("");
                     return;
                 }
-                
+
                 userData.setUsername(regUsername);
                 userData.setPassword(regPassword);
-                users.put(regUsername, userData);
+                userDataHandler.saveUser(userData);
                 JOptionPane.showMessageDialog(null, "Registration successful.");
 
             }
         });
+
+        // TODO: User deletion logic, password reset logic
 
         loginButton.addActionListener(new ActionListener() {
             @Override
@@ -118,8 +113,9 @@ public class TimetrackingTool {
                 String loginUsername = loginUsernameField.getText();
                 String loginPassword = new String(loginPasswordField.getPassword());
 
-                if (users.containsKey(loginUsername) && users.get(loginUsername).checkPassword(loginPassword)) {
-                    String userRole = users.get(loginUsername).getRole();
+                if (userDataHandler.checkUsernameExists(loginUsername) && userDataHandler.checkPassword(loginUsername,
+                        loginPassword)) {
+                    String userRole = userDataHandler.getUserData(loginUsername).getRole();
                     openRoleSpecificMenu(userRole, loginUsername);
                 } else {
                     JOptionPane.showMessageDialog(null, "Login failed. Please check your credentials.");
@@ -223,8 +219,6 @@ public class TimetrackingTool {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     registerWorktime(username);
-                    EmployeeWorktimeRegistrationForm worktimeForm = new EmployeeWorktimeRegistrationForm();
-                    worktimeForm.setVisible(true);
                 }
             });
 
@@ -232,8 +226,6 @@ public class TimetrackingTool {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     viewWorktime(username);
-                    EmployeeWorktimeRegistrationForm form = new EmployeeWorktimeRegistrationForm();
-                    form.displayDataFromFile();
                 }
             });
 
@@ -251,6 +243,8 @@ public class TimetrackingTool {
     }
 
     private static void registerSickness(String username) {
+        // TODO: Object class for sick days and handling logic
+        
         String employeeUsername = JOptionPane.showInputDialog("Enter the employee's username:");
         String sicknessDescription = JOptionPane.showInputDialog("Enter the sickness description:");
 
@@ -259,6 +253,8 @@ public class TimetrackingTool {
     }
 
     private static void viewVacationRequests() {
+        // TODO: Object class for vacation requests & proper handling
+
         StringBuilder vacationRequestList = new StringBuilder("Vacation Requests:\n");
 
         for (Map.Entry<String, List<String>> entry : vacationRequests.entrySet()) {
@@ -284,6 +280,7 @@ public class TimetrackingTool {
         String employeeUsername = JOptionPane.showInputDialog("Enter the employee's username:");
         String worktimeSheet = JOptionPane.showInputDialog("Enter the approved worktime sheet:");
 
+        // TODO: Supervisor's worktime approval logic
         if (worktimeSheet != null && !worktimeSheet.isEmpty()) {
             worktimeApprovals.put(employeeUsername, worktimeSheet);
             JOptionPane.showMessageDialog(null, "Worktime sheet approved for " + employeeUsername + ".");
@@ -293,41 +290,31 @@ public class TimetrackingTool {
     }
 
     private static void requestVacation(String username) {
-        // Employee's vacation request code hier implementieren
+        // TODO: Employee's vacation request code
 
         VacationRequestForm requestForm = new VacationRequestForm(username);
-
-        // Set the form's visibility to true
         requestForm.setVisible(true);
-
     }
 
     private static void deleteVacation(String username) {
-        // Employee's vacation deletion code hier implementieren
-
+        // TODO: Employee's vacation deletion code
     }
 
     private static void registerWorktime(String username) {
+        // TODO Employee's worktime registration code
 
         EmployeeWorktimeRegistrationForm worktimeForm = new EmployeeWorktimeRegistrationForm();
-
         worktimeForm.setVisible(true);
-
-        // Optional: You may want to pass the username to the form for further
-        // customization
-        // worktimeForm.setUsername(username);
     }
 
-    // Employee's worktime registration code hier implementieren
+    
 
     private static void viewWorktime(String username) {
 
         EmployeeWorktimeRegistrationForm worktimeForm = new EmployeeWorktimeRegistrationForm();
+        worktimeForm.displayDataFromFile();
 
         worktimeForm.setVisible(true);
-
-        // Optional: You may want to pass the username to the form for further
-        // customization
 
         List<String> worktimeSheet = worktimeSheets.get(username);
         if (worktimeSheet != null && !worktimeSheet.isEmpty()) {
@@ -358,6 +345,5 @@ public class TimetrackingTool {
         button.setPreferredSize(new Dimension(200, 40));
         button.setBackground(new Color(129, 217, 94));
         button.setForeground(Color.WHITE);
-        button.setBorder(new RoundedBorder(10, new Color(40, 5, 5))); // Rounded border
     }
 }
