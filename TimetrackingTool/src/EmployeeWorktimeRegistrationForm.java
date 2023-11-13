@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.io.FileWriter;
 import java.io.BufferedReader;
-import java.io.FileReader; 
+import java.io.FileReader;
 
 public class EmployeeWorktimeRegistrationForm extends JFrame {
     private JTable table;
@@ -276,7 +276,7 @@ public class EmployeeWorktimeRegistrationForm extends JFrame {
             if (plusMinusValue == null) {
                 return formatTime(totalPlusMinusHours, totalPlusMinusMinutes);
             }
-            
+
             if (!plusMinusValue.isEmpty()) {
                 String[] parts = plusMinusValue.split(":");
                 int hours = Integer.parseInt(parts[0]);
