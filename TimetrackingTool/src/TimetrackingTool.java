@@ -52,8 +52,8 @@ public class TimetrackingTool {
         frame.add(tabbedPane);
 
         // Definiere Farben hier:
-        Color buttonColor = new Color(23, 25, 30);
-        Color panelColor = new Color(84, 101, 79);
+        Color buttonColor = new Color(81, 114, 92);
+        Color panelColor = new Color(220, 235, 216);
 
         registrationPanel.setBackground(panelColor);
         loginPanel.setBackground(panelColor);
