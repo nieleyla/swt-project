@@ -282,7 +282,7 @@ public class TimetrackingTool {
 
     private static void requestVacation(String username) {
         // Employee's vacation request code hier implementieren
-        
+
         VacationRequestForm requestForm = new VacationRequestForm(username);
 
         // Set the form's visibility to true
@@ -295,32 +295,27 @@ public class TimetrackingTool {
 
     }
 
-    private static void registerWorktime(String username){
+    private static void registerWorktime(String username) {
 
-            EmployeeWorktimeRegistrationForm worktimeForm = new EmployeeWorktimeRegistrationForm();
+        EmployeeWorktimeRegistrationForm worktimeForm = new EmployeeWorktimeRegistrationForm();
 
+        worktimeForm.setVisible(true);
 
-            worktimeForm.setVisible(true);
+        // Optional: You may want to pass the username to the form for further
+        // customization
+        // worktimeForm.setUsername(username);
+    }
 
-            // Optional: You may want to pass the username to the form for further customization
-          //  worktimeForm.setUsername(username);
-        }
-
-        // Employee's worktime registration code hier implementieren
-
-
-
-
+    // Employee's worktime registration code hier implementieren
 
     private static void viewWorktime(String username) {
 
-            EmployeeWorktimeRegistrationForm worktimeForm = new EmployeeWorktimeRegistrationForm();
+        EmployeeWorktimeRegistrationForm worktimeForm = new EmployeeWorktimeRegistrationForm();
 
+        worktimeForm.setVisible(true);
 
-            worktimeForm.setVisible(true);
-
-            // Optional: You may want to pass the username to the form for further customization
-
+        // Optional: You may want to pass the username to the form for further
+        // customization
 
         List<String> worktimeSheet = worktimeSheets.get(username);
         if (worktimeSheet != null && !worktimeSheet.isEmpty()) {
