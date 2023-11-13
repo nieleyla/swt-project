@@ -327,6 +327,13 @@ public class EmployeeWorktimeRegistrationForm extends JFrame {
 
     public void displayDataFromFile() {
         try {
+            FileWriter writer = new FileWriter("worktime_data.csv", true);
+            writer.close();
+        } catch (IOException e) {
+            System.out.println("Error creating user file");
+        }
+
+        try {
             BufferedReader reader = new BufferedReader(new FileReader("worktime_data.csv"));
             DefaultTableModel model = new DefaultTableModel();
 
