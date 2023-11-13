@@ -342,6 +342,33 @@ public class EmployeeWorktimeRegistrationForm extends JFrame {
             frame.add(new JScrollPane(table));
             frame.pack();
             frame.setVisible(true);
+
+            // Add button that allows applying the displayed data to the current table
+            JPanel buttonPanel = new JPanel();
+            JButton applyButton = new JButton("Apply");
+
+            buttonPanel.add(applyButton);
+            frame.add(buttonPanel, BorderLayout.NORTH);
+
+            applyButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    DefaultTableModel currentModel = (DefaultTableModel) EmployeeWorktimeRegistrationForm.this.table
+                            .getModel();
+                    currentModel.setRowCount(0);
+
+                    for (int row = 0; row < model.getRowCount(); row++) {
+                        Object[] rowData = new Object[model.getColumnCount()];
+                        for (int column = 0; column < model.getColumnCount(); column++) {
+                            rowData[column] = model.getValueAt(row, column);
+                        }
+                        currentModel.addRow(rowData);
+                    }
+
+                    frame.dispose();
+                }
+            });
+
         } catch (IOException e) {
             e.printStackTrace();
         }
