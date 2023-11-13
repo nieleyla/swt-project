@@ -8,7 +8,7 @@ import java.util.Map;
 import javax.swing.border.Border;
 
 public class TimetrackingTool {
-    private static Map<String, UserData1> users = new HashMap<>();
+    private static Map<String, UserData> users = new HashMap<>();
     private static Map<String, List<String>> vacationRequests = new HashMap<>();
     private static Map<String, List<String>> worktimeSheets = new HashMap<>();
     private static Map<String, String> sicknessRecords = new HashMap<>();
@@ -88,7 +88,6 @@ public class TimetrackingTool {
 
                 String regUsername = regUsernameField.getText();
                 String regPassword = new String(regPasswordField.getPassword());
-                String regRole = (String) regRoleComboBox.getSelectedItem();
 
                 if (users.containsKey(regUsername)) {
                     JOptionPane.showMessageDialog(null, "Username already exists. Please choose another one.");
@@ -110,8 +109,6 @@ public class TimetrackingTool {
                 users.put(regUsername, userData);
                 JOptionPane.showMessageDialog(null, "Registration successful.");
 
-                regUsernameField.setText("");
-                regPasswordField.setText("");
             }
         });
 
@@ -201,7 +198,7 @@ public class TimetrackingTool {
             JButton requestVacationButton = new JButton("Request Vacation");
             JButton deleteVacationButton = new JButton("Delete Vacation");
             JButton registerWorktimeButton = new JButton("Register Worktime");
-            JButton viewWorktimeButton = new JButton("View Worktime"); // New button for viewing worktime
+            JButton viewWorktimeButton = new JButton("View Worktime");
 
             styleButton(requestVacationButton);
             styleButton(deleteVacationButton);
@@ -359,7 +356,7 @@ public class TimetrackingTool {
 
     private static void styleButton(JButton button) {
         button.setPreferredSize(new Dimension(200, 40));
-        button.setBackground(new Color(129, 217, 94)); // Blue
+        button.setBackground(new Color(129, 217, 94));
         button.setForeground(Color.WHITE);
         button.setBorder(new RoundedBorder(10, new Color(40, 5, 5))); // Rounded border
     }
