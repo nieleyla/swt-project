@@ -83,17 +83,32 @@ public class TimetrackingTool {
         registerButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                String regRole = (String) regRoleComboBox.getSelectedItem();
+                UserData userData = new UserData(regRole);
+
                 String regUsername = regUsernameField.getText();
                 String regPassword = new String(regPasswordField.getPassword());
                 String regRole = (String) regRoleComboBox.getSelectedItem();
 
                 if (users.containsKey(regUsername)) {
                     JOptionPane.showMessageDialog(null, "Username already exists. Please choose another one.");
-                } else {
-                    UserData1 userData = new UserData1(regPassword, regRole);
-                    users.put(regUsername, userData);
-                    JOptionPane.showMessageDialog(null, "Registration successful.");
+                    regUsernameField.setText("");
+                    regPasswordField.setText("");
+                    return;
                 }
+
+                String registrationError = UserData.validateRegistration(regUsername, regPassword);
+                if (registrationError != null) {
+                    JOptionPane.showMessageDialog(null, registrationError);
+                    regUsernameField.setText("");
+                    regPasswordField.setText("");
+                    return;
+                }
+                
+                userData.setUsername(regUsername);
+                userData.setPassword(regPassword);
+                users.put(regUsername, userData);
+                JOptionPane.showMessageDialog(null, "Registration successful.");
 
                 regUsernameField.setText("");
                 regPasswordField.setText("");
@@ -106,7 +121,7 @@ public class TimetrackingTool {
                 String loginUsername = loginUsernameField.getText();
                 String loginPassword = new String(loginPasswordField.getPassword());
 
-                if (users.containsKey(loginUsername) && users.get(loginUsername).getPassword().equals(loginPassword)) {
+                if (users.containsKey(loginUsername) && users.get(loginUsername).checkPassword(loginPassword)) {
                     String userRole = users.get(loginUsername).getRole();
                     openRoleSpecificMenu(userRole, loginUsername);
                 } else {
