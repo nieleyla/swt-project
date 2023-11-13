@@ -53,7 +53,7 @@ public class TimetrackingTool {
 
         // Definiere Farben hier:
         Color buttonColor = new Color(23, 25, 30);
-        Color panelColor = new Color(129, 217, 94);
+        Color panelColor = new Color(84, 101, 79);
 
         registrationPanel.setBackground(panelColor);
         loginPanel.setBackground(panelColor);
@@ -282,6 +282,11 @@ public class TimetrackingTool {
 
     private static void requestVacation(String username) {
         // Employee's vacation request code hier implementieren
+        
+        VacationRequestForm requestForm = new VacationRequestForm(username);
+
+        // Set the form's visibility to true
+        requestForm.setVisible(true);
 
     }
 
@@ -290,12 +295,33 @@ public class TimetrackingTool {
 
     }
 
-    private static void registerWorktime(String username) {
+    private static void registerWorktime(String username){
+
+            EmployeeWorktimeRegistrationForm worktimeForm = new EmployeeWorktimeRegistrationForm();
+
+
+            worktimeForm.setVisible(true);
+
+            // Optional: You may want to pass the username to the form for further customization
+          //  worktimeForm.setUsername(username);
+        }
+
         // Employee's worktime registration code hier implementieren
 
-    }
+
+
+
 
     private static void viewWorktime(String username) {
+
+            EmployeeWorktimeRegistrationForm worktimeForm = new EmployeeWorktimeRegistrationForm();
+
+
+            worktimeForm.setVisible(true);
+
+            // Optional: You may want to pass the username to the form for further customization
+
+
         List<String> worktimeSheet = worktimeSheets.get(username);
         if (worktimeSheet != null && !worktimeSheet.isEmpty()) {
             StringBuilder worktimeContent = new StringBuilder();
@@ -317,7 +343,7 @@ public class TimetrackingTool {
             frame.pack();
             frame.setVisible(true);
         } else {
-            JOptionPane.showMessageDialog(null, "No worktime records available.");
+            // JOptionPane.showMessageDialog(null, "No worktime records available.");
         }
     }
 
